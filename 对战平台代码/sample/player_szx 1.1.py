@@ -130,9 +130,12 @@ class Player():
         theta = MyNode.theta  # 得到的喷射角度
         eject_time = MyNode.time  # 得到喷射时间
         mytick = 0  # 初始帧
+        maxtick = 100  # 最大帧
         frame_delta = Consts["FRAME_DELTA"]
         while 1:
             mytick += 1
+            if mytick > maxtick:
+                return 0
             myupdate(player, allcells, frame_delta, mytick, eject_time, theta)  # 计算一帧整个画面的运动（认为对手不喷）
             if player.dead:  # 玩家自己死亡，返回false
                 return 0
