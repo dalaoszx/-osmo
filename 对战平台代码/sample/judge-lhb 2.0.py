@@ -1,5 +1,6 @@
 import math
 import sympy
+from consts import Consts
 '''
 注意:所给的角度不是喷射角度，而是加速方向，也就是说喷射角度和这个角度方向相反
 
@@ -43,6 +44,53 @@ class Node():
 
     def setPrev(self, newprev):
         self.prev = newprev
+
+#lh新加的
+class cell_node():
+    def __init__(self,id=None, pos=[0, 0], veloc=[0, 0], radius=5):
+        self.id = id
+        self.pos = pos
+        self.veloc = veloc
+        self.radius = radius
+    #由于cell类把坐标限制在了一定范围，为实现九个区域分别计算，重新定义一个cell_node类
+
+def trans(self):
+    b = cell_node()
+    b.id = self.id
+    b.pos = self.pos
+    b.veloc = self.veloc
+    b.radius = self.radius
+    #将cell类的基本元素转换到cell_node类
+
+def getTheBestNode(sel,oth):
+    id = oth.id
+    pos = oth.pos
+    veloc = oth.veloc
+    radius = oth.radius
+    pos_1_1 = pos[0] - Consts["WORLD_X"]
+    pos_1_2 = pos[0]
+    pos_1_3 = pos[0] + Consts["WORLD_X"]
+    pos_2_1 = pos[1] - Consts["WORLD_Y"]
+    pos_2_2 = pos[1]
+    pos_2_3 = pos[1] + Consts["WORLD_Y"]
+    adict = {}
+    adict[1] = relative_exchange(sel,cell_node(id, [pos_1_1, pos_2_3], veloc, radius))
+    adict[2] = relative_exchange(sel,cell_node(id, [pos_1_2, pos_2_3], veloc, radius))
+    adict[3] = relative_exchange(sel,cell_node(id, [pos_1_3, pos_2_3], veloc, radius))
+    adict[4] = relative_exchange(sel,cell_node(id, [pos_1_1, pos_2_2], veloc, radius))
+    adict[5] = relative_exchange(sel,cell_node(id, [pos_1_2, pos_2_2], veloc, radius))
+    adict[6] = relative_exchange(sel,cell_node(id, [pos_1_3, pos_2_2], veloc, radius))
+    adict[7] = relative_exchange(sel,cell_node(id, [pos_1_1, pos_2_1], veloc, radius))
+    adict[8] = relative_exchange(sel,cell_node(id, [pos_1_2, pos_2_1], veloc, radius))
+    adict[9] = relative_exchange(sel,cell_node(id, [pos_1_3, pos_2_1], veloc, radius))
+    cost = adict[1].cost
+    l = 1
+    for i in range(1,10):
+        if adict[i].cost > cost:
+            cost = adict[i].cost
+            l = i
+    return adict[l]
+#lh修改到此
 
 def relative_exchange(sel,oth):#输入：自己的坐标，需要追的球坐标，输入类型为cellNode
     relative_pos=[oth.pos[0]-sel.pos[0],oth.pos[1]-sel.pos[1]]#计算相对位置
