@@ -74,18 +74,48 @@ def getTheBestNode(sel,oth):
     pos_2_2 = pos[1]
     pos_2_3 = pos[1] + Consts["WORLD_Y"]
     adict = {}
-    adict[1] = relative_exchange(sel,cell_node(id, [pos_1_1, pos_2_3], veloc, radius))
-    adict[2] = relative_exchange(sel,cell_node(id, [pos_1_2, pos_2_3], veloc, radius))
-    adict[3] = relative_exchange(sel,cell_node(id, [pos_1_3, pos_2_3], veloc, radius))
+    xis_min = True
+    yis_min = True
+    if sel.pos[0] > oth.pos[0]:
+        xis_min = False
+    if sel.pos[1] > oth.pos[0]:
+        yis_min = False
+    if xis_min == True:
+        if yis_min == True:
+            adict[1] = relative_exchange(sel, cell_node(id, [pos_1_1, pos_2_1], veloc, radius))
+            adict[2] = relative_exchange(sel, cell_node(id, [pos_1_2, pos_2_1], veloc, radius))
+            adict[3] = relative_exchange(sel, cell_node(id, [pos_1_1, pos_2_2], veloc, radius))
+            adict[4] = relative_exchange(sel, cell_node(id, [pos_1_2, pos_2_2], veloc, radius))
+        else:
+            adict[1] = relative_exchange(sel, cell_node(id, [pos_1_1, pos_2_2], veloc, radius))
+            adict[2] = relative_exchange(sel, cell_node(id, [pos_1_2, pos_2_2], veloc, radius))
+            adict[3] = relative_exchange(sel, cell_node(id, [pos_1_1, pos_2_3], veloc, radius))
+            adict[4] = relative_exchange(sel, cell_node(id, [pos_1_2, pos_2_3], veloc, radius))
+    else:
+        if yis_min == True:
+            adict[1] = relative_exchange(sel, cell_node(id, [pos_1_2, pos_2_1], veloc, radius))
+            adict[2] = relative_exchange(sel, cell_node(id, [pos_1_3, pos_2_1], veloc, radius))
+            adict[3] = relative_exchange(sel, cell_node(id, [pos_1_2, pos_2_2], veloc, radius))
+            adict[4] = relative_exchange(sel, cell_node(id, [pos_1_3, pos_2_2], veloc, radius))
+        else:
+            adict[1] = relative_exchange(sel, cell_node(id, [pos_1_2, pos_2_2], veloc, radius))
+            adict[2] = relative_exchange(sel, cell_node(id, [pos_1_3, pos_2_2], veloc, radius))
+            adict[3] = relative_exchange(sel, cell_node(id, [pos_1_2, pos_2_3], veloc, radius))
+            adict[4] = relative_exchange(sel, cell_node(id, [pos_1_3, pos_2_3], veloc, radius))
+    '''
+    adict[1] = relative_exchange(sel,cell_node(id, [pos_1_1, pos_2_1], veloc, radius))
+    adict[2] = relative_exchange(sel,cell_node(id, [pos_1_2, pos_2_1], veloc, radius))
+    adict[3] = relative_exchange(sel,cell_node(id, [pos_1_3, pos_2_1], veloc, radius))
     adict[4] = relative_exchange(sel,cell_node(id, [pos_1_1, pos_2_2], veloc, radius))
     adict[5] = relative_exchange(sel,cell_node(id, [pos_1_2, pos_2_2], veloc, radius))
     adict[6] = relative_exchange(sel,cell_node(id, [pos_1_3, pos_2_2], veloc, radius))
-    adict[7] = relative_exchange(sel,cell_node(id, [pos_1_1, pos_2_1], veloc, radius))
-    adict[8] = relative_exchange(sel,cell_node(id, [pos_1_2, pos_2_1], veloc, radius))
-    adict[9] = relative_exchange(sel,cell_node(id, [pos_1_3, pos_2_1], veloc, radius))
+    adict[7] = relative_exchange(sel,cell_node(id, [pos_1_1, pos_2_3], veloc, radius))
+    adict[8] = relative_exchange(sel,cell_node(id, [pos_1_2, pos_2_3], veloc, radius))
+    adict[9] = relative_exchange(sel,cell_node(id, [pos_1_3, pos_2_3], veloc, radius))
+    '''
     cost = adict[1].cost
     l = 1
-    for i in range(1,10):
+    for i in range(1,5):
         if adict[i].cost > cost:
             cost = adict[i].cost
             l = i
