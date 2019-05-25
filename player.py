@@ -37,7 +37,11 @@ class Player():
 
         # next和prev功能在创建链表时候可能使用，在估值时没有用，如果之后用不上可以删除
         def gettheta(self):
-            return self.theta
+            my_theta = math.pi + self.theta
+            if my_theta > 2 * math.pi:
+                return my_theta - 2 * math.pi
+            else:
+                return my_theta
 
         def gettime(self):
             return self.time
@@ -108,18 +112,37 @@ class Player():
         pos_2_2 = pos[1]
         pos_2_3 = pos[1] + Consts["WORLD_Y"]
         adict = {}
-        adict[1] = self.relative_exchange(sel, self.cell_node(id, [pos_1_1, pos_2_3], veloc, radius))
-        adict[2] = self.relative_exchange(sel, self.cell_node(id, [pos_1_2, pos_2_3], veloc, radius))
-        adict[3] = self.relative_exchange(sel, self.cell_node(id, [pos_1_3, pos_2_3], veloc, radius))
-        adict[4] = self.relative_exchange(sel, self.cell_node(id, [pos_1_1, pos_2_2], veloc, radius))
-        adict[5] = self.relative_exchange(sel, self.cell_node(id, [pos_1_2, pos_2_2], veloc, radius))
-        adict[6] = self.relative_exchange(sel, self.cell_node(id, [pos_1_3, pos_2_2], veloc, radius))
-        adict[7] = self.relative_exchange(sel, self.cell_node(id, [pos_1_1, pos_2_1], veloc, radius))
-        adict[8] = self.relative_exchange(sel, self.cell_node(id, [pos_1_2, pos_2_1], veloc, radius))
-        adict[9] = self.relative_exchange(sel, self.cell_node(id, [pos_1_3, pos_2_1], veloc, radius))
+        xis_min = True
+        yis_min = True
+        if sel.pos[0] > oth.pos[0]:
+            xis_min = False
+        if sel.pos[1] > oth.pos[0]:
+            yis_min = False
+        if xis_min == True:
+            if yis_min == True:
+                adict[1] = self.relative_exchange(sel, self.cell_node(id, [pos_1_1, pos_2_1], veloc, radius))
+                adict[2] = self.relative_exchange(sel, self.cell_node(id, [pos_1_2, pos_2_1], veloc, radius))
+                adict[3] = self.relative_exchange(sel, self.cell_node(id, [pos_1_1, pos_2_2], veloc, radius))
+                adict[4] = self.relative_exchange(sel, self.cell_node(id, [pos_1_2, pos_2_2], veloc, radius))
+            else:
+                adict[1] = self.relative_exchange(sel, self.cell_node(id, [pos_1_1, pos_2_2], veloc, radius))
+                adict[2] = self.relative_exchange(sel, self.cell_node(id, [pos_1_2, pos_2_2], veloc, radius))
+                adict[3] = self.relative_exchange(sel, self.cell_node(id, [pos_1_1, pos_2_3], veloc, radius))
+                adict[4] = self.relative_exchange(sel, self.cell_node(id, [pos_1_2, pos_2_3], veloc, radius))
+        else:
+            if yis_min == True:
+                adict[1] = self.relative_exchange(sel, self.cell_node(id, [pos_1_2, pos_2_1], veloc, radius))
+                adict[2] = self.relative_exchange(sel, self.cell_node(id, [pos_1_3, pos_2_1], veloc, radius))
+                adict[3] = self.relative_exchange(sel, self.cell_node(id, [pos_1_2, pos_2_2], veloc, radius))
+                adict[4] = self.relative_exchange(sel, self.cell_node(id, [pos_1_3, pos_2_2], veloc, radius))
+            else:
+                adict[1] = self.relative_exchange(sel, self.cell_node(id, [pos_1_2, pos_2_2], veloc, radius))
+                adict[2] = self.relative_exchange(sel, self.cell_node(id, [pos_1_3, pos_2_2], veloc, radius))
+                adict[3] = self.relative_exchange(sel, self.cell_node(id, [pos_1_2, pos_2_3], veloc, radius))
+                adict[4] = self.relative_exchange(sel, self.cell_node(id, [pos_1_3, pos_2_3], veloc, radius))
         cost = adict[1].cost
         l = 1
-        for i in range(1, 10):
+        for i in range(1, 5):
             if adict[i].cost > cost:
                 cost = adict[i].cost
                 l = i
@@ -204,8 +227,6 @@ class Player():
         relative_i = math.radians(relative_i)
         delta_alpha = math.radians(delta_alpha)
         time_i = 0
-        if r2 >= r1:  # 如果吃不了，那么喷射时间是0，喷射获益是-1
-            return 0, -1
         a = (Consts["EJECT_MASS_RATIO"] * Consts["DELTA_VELOC"]) / (
                     1 - Consts["EJECT_MASS_RATIO"])  # a= 加速度,由帧数以及具体场地细节决定
         # 集体计算方法：使用余弦定理
@@ -213,7 +234,7 @@ class Player():
         d_alpha = d0 * math.sin(delta_alpha) / math.sin(delta_alpha - relative_i)
         # 最大喷射时间是{获取收益为0时间，全程加速的时间}也想要加入一个基于经验得出的最多时间
         #t_max = min(int(math.log((r1 ** 2 - r2 ** 2) / r1 ** 2, 1 - Consts["EJECT_MASS_RATIO"])),int(math.sqrt(2 * d_alpha / a)))
-        t_max = min(int(math.log((r1 ** 2 - r2 ** 2) / r1 ** 2, 1 - Consts["EJECT_MASS_RATIO"])),15,int(math.sqrt(2 * d_alpha / a)))
+        t_max = min(int(math.log(r2 ** 2 / r1 ** 2, 1 - Consts["EJECT_MASS_RATIO"])),15) #,int(math.sqrt(2 * d_alpha / a)))
         # 0.99是每次喷出质量
         cost_i = 0
         j = 0.95
@@ -307,16 +328,29 @@ class Player():
 
     def dangerouscelllst(self, allcells):
         adjacentcells = []
-        dangerouscells = []
-        n = 7
+        dangerouscells = {}
+        n = 10
         for acell in allcells:
             if (not acell.dead) and acell != allcells[self.id]:
                 if acell.radius > allcells[self.id].radius and allcells[self.id].distance_from(acell) - allcells[self.id].radius - acell.radius < n*Consts["FRAME_DELTA"]*math.hypot(allcells[self.id].veloc[0]-acell.veloc[0],allcells[self.id].veloc[1]-acell.veloc[1]):
                     adjacentcells.append(acell)
         for acell in allcells:
-            if (not acell.dead) and acell != allcells[self.id]:
-                if acell in adjacentcells and self.testisdangerous(allcells[self.id], acell):
-                    dangerouscells.append(acell)
+            if (not acell.dead) and acell != allcells[self.id] and acell in adjacentcells:
+                # 以下加入跨屏判断
+                acelllst =[acell]
+                if acell.pos[0] < acell.radius:
+                    acelllst.append(Cell(acell.id, [acell.pos[0]+Consts["WORLD_X"], acell.pos[1]], acell.veloc, acell.radius))
+                if Consts["WORLD_X"] - acell.pos[0] < acell.radius:
+                    acelllst.append(Cell(acell.id, [acell.pos[0]-Consts["WORLD_X"], acell.pos[1]], acell.veloc, acell.radius))
+                if acell.pos[1] < acell.radius:
+                    acelllst.append(Cell(acell.id, [acell.pos[0], acell.pos[1]+Consts["WORLD_Y"]], acell.veloc, acell.radius))
+                if Consts["WORLD_Y"] - acell.pos[1] < acell.radius:
+                    acelllst.append(Cell(acell.id, [acell.pos[0], acell.pos[1]-Consts["WORLD_Y"]], acell.veloc, acell.radius))
+                # 结束
+                for bcell in acelllst:
+                    if self.testisdangerous(allcells[self.id], bcell):
+                        dangerouscells[acell] = bcell
+                        break
         return dangerouscells
 
     def is_strategy_available(self, targetcell, MyNode, allcells):
@@ -413,8 +447,8 @@ class Player():
         #MyNode = self.boshen(targetcell)  # 此函数为波神的函数
         player = allcells[self.id]  # 玩家自己
         init_radius = player.radius
-        theta = MyNode.theta  # 得到的喷射角度
-        eject_time = MyNode.time  # 得到喷射时间
+        theta = MyNode.gettheta()  # 得到的喷射角度
+        eject_time = MyNode.gettime()  # 得到喷射时间
         mytick = 0  # 初始帧
         maxtick = 50  # 最大帧
         frame_delta = Consts["FRAME_DELTA"]
@@ -451,15 +485,21 @@ class Player():
         for cell in allcells:
             if cell in self.dangerouscelllst(allcells):
                 self.reset()
-                return self.avoid(allcells[self.id], cell)
-        r = 200
+                return self.avoid(allcells[self.id], self.dangerouscelllst(allcells)[cell])
+        if len(allcells) > 75:
+            r = 100
+        elif 50 < len(allcells) < 75:
+            r = 200
+        elif 25 < len(allcells) < 75:
+            r = 400
+        else:
+            r = 800
         if self.finish:
             strategylst = []
             for cell in allcells:
-                if cell.distance_from(allcells[self.id]) < r and cell != allcells[self.id] and not cell.dead and cell.radius < allcells[self.id].radius:
-                    cellnode = self.getTheBestNode(allcells[self.id], self.trans(cell))
-                    #cellnode = self.relative_exchange(allcells[self.id], cell)
-                    print(cellnode.getcost())
+                if cell.distance_from(allcells[self.id]) < r and cell != allcells[self.id] and cell.radius < allcells[self.id].radius and cell.radius > 2*allcells[self.id].radius*Consts["EJECT_MASS_RATIO"]**0.5:
+                    #cellnode = self.getTheBestNode(allcells[self.id], self.trans(cell))
+                    cellnode = self.relative_exchange(allcells[self.id], cell)
                     if cellnode.getcost() > 0:
                         strategylst.append((cell, cellnode))
             if len(strategylst) == 0:
@@ -467,8 +507,8 @@ class Player():
             else:
                 strategylst.sort(key=lambda strate: strate[1].getcost(), reverse=True)
             for starte in strategylst:
-                if self.is_strategy_available(starte[0], starte[1], allcells) >= 2:
-                    self.target = starte[0]
+                if self.is_strategy_available(starte[0], starte[1], allcells) >= 1:
+                    self.target = starte[0].id
                     self.finish = False
                     self.t = starte[1].gettime()
                     self.theta = starte[1].gettheta()
@@ -481,13 +521,17 @@ class Player():
                 self.t -= 1
                 return self.theta
         else:
+            for cell in allcells:
+                if cell.id == self.target:
+                    target = cell
+                    break
+            else:
+                self.reset()
+                return None
             if allcells[self.id].collide_group is not None:
                 self.reset()
                 return None
-            if self.target.collide_group is not None:
-                self.reset()
-                return None
-            if self.target.dead:
+            if target.collide_group is not None:
                 self.reset()
                 return None
             if self.t > 0:
