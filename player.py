@@ -188,13 +188,17 @@ class Player():
             if cost_i > N.cost:  # N.cost默认值是0，也就是说只有大于零才会第一次更新
                 if i<0:
                     i+=360
+                i -= 90
+                if i < 0:
+                    i += 360
+                i = 360 - i
                 N.settheta((i * math.pi) / 180)  # i是实际加速方向与x轴夹角，不是相对于连线方向的夹角
                 N.settime(time_i)
                 N.setcost(cost_i)
         return N  # 输出：前进角度、喷射时间、获得收益（cost）
 
     def F(self,r1,r2,T,t):
-        return (r2 ** 2 + (r1 ** 2) * ((1 - Consts["EJECT_MASS_RATIO"]) ** t) - r1 ** 2) / (T)
+        return (r2 ** 2 + (r1 ** 2) * (1 - Consts["EJECT_MASS_RATIO"]*t+0.5*t*(t-1)*Consts["EJECT_MASS_RATIO"]**2) - r1 **2) / (T)
 
     def cost_of_theta(self, relative_i, r1, r2, d0, v0, delta_alpha):
         relative_i = math.radians(relative_i)
@@ -209,7 +213,7 @@ class Player():
         d_alpha = d0 * math.sin(delta_alpha) / math.sin(delta_alpha - relative_i)
         # 最大喷射时间是{获取收益为0时间，全程加速的时间}也想要加入一个基于经验得出的最多时间
         #t_max = min(int(math.log((r1 ** 2 - r2 ** 2) / r1 ** 2, 1 - Consts["EJECT_MASS_RATIO"])),int(math.sqrt(2 * d_alpha / a)))
-        t_max = min(int(math.log((r1 ** 2 - r2 ** 2) / r1 ** 2, 1 - Consts["EJECT_MASS_RATIO"])),int(math.sqrt(2 * d_alpha / a)))
+        t_max = min(int(math.log((r1 ** 2 - r2 ** 2) / r1 ** 2, 1 - Consts["EJECT_MASS_RATIO"])),15,int(math.sqrt(2 * d_alpha / a)))
         # 0.99是每次喷出质量
         cost_i = 0
         j = 0.95
@@ -444,19 +448,18 @@ class Player():
         return theta
 
     def strategy(self, allcells):
-        print('hihi')
         for cell in allcells:
             if cell in self.dangerouscelllst(allcells):
-                print('haha')
                 self.reset()
                 return self.avoid(allcells[self.id], cell)
         r = 200
         if self.finish:
-            print('hoho')
             strategylst = []
             for cell in allcells:
-                if cell.distance_from(allcells[self.id]) < r and cell != allcells[self.id] and not cell.dead:
+                if cell.distance_from(allcells[self.id]) < r and cell != allcells[self.id] and not cell.dead and cell.radius < allcells[self.id].radius:
                     cellnode = self.getTheBestNode(allcells[self.id], self.trans(cell))
+                    #cellnode = self.relative_exchange(allcells[self.id], cell)
+                    print(cellnode.getcost())
                     if cellnode.getcost() > 0:
                         strategylst.append((cell, cellnode))
             if len(strategylst) == 0:
@@ -469,7 +472,6 @@ class Player():
                     self.finish = False
                     self.t = starte[1].gettime()
                     self.theta = starte[1].gettheta()
-                    print(starte[1].getcost(), starte[1].gettime())
                     break
             else:
                 return None
@@ -477,9 +479,8 @@ class Player():
                 return None
             else:
                 self.t -= 1
-                return -self.theta
+                return self.theta
         else:
-            print('hehe')
             if allcells[self.id].collide_group is not None:
                 self.reset()
                 return None
@@ -491,7 +492,7 @@ class Player():
                 return None
             if self.t > 0:
                 self.t -= 1
-                return -self.theta
+                return self.theta
             else:
                 return None
 
