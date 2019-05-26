@@ -32,7 +32,7 @@ from settings import Settings
 from world import World
 
 from sample.brownian_motion import Player as Player0
-from sample.cxk import Player as Player1
+from sample.player1 import Player as Player1
 
 from database import Database
 
