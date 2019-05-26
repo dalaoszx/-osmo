@@ -360,10 +360,24 @@ class Player():
                     acelllst.append(Cell(acell.id, [acell.pos[0], acell.pos[1]+Consts["WORLD_Y"]], acell.veloc, acell.radius))
                 if Consts["WORLD_Y"] - acell.pos[1] < acell.radius:
                     acelllst.append(Cell(acell.id, [acell.pos[0], acell.pos[1]-Consts["WORLD_Y"]], acell.veloc, acell.radius))
+                bcelllst =[allcells[self.id]]
+                if allcells[self.id].pos[0] < allcells[self.id].radius:
+                    bcelllst.append(Cell(allcells[self.id].id, [allcells[self.id].pos[0]+Consts["WORLD_X"], allcells[self.id].pos[1]], allcells[self.id].veloc, allcells[self.id].radius))
+                if Consts["WORLD_X"] - allcells[self.id].pos[0] < allcells[self.id].radius:
+                    bcelllst.append(Cell(allcells[self.id].id, [allcells[self.id].pos[0]-Consts["WORLD_X"], allcells[self.id].pos[1]], allcells[self.id].veloc, allcells[self.id].radius))
+                if allcells[self.id].pos[1] < allcells[self.id].radius:
+                    bcelllst.append(Cell(allcells[self.id].id, [allcells[self.id].pos[0], allcells[self.id].pos[1]+Consts["WORLD_Y"]], allcells[self.id].veloc, allcells[self.id].radius))
+                if Consts["WORLD_Y"] - allcells[self.id].pos[1] < allcells[self.id].radius:
+                    bcelllst.append(Cell(allcells[self.id].id, [allcells[self.id].pos[0], allcells[self.id].pos[1]-Consts["WORLD_Y"]], allcells[self.id].veloc, allcells[self.id].radius))
                 # 结束
-                for bcell in acelllst:
-                    if self.testisdangerous(allcells[self.id], bcell):
-                        dangerouscells[acell] = bcell
+                find = False
+                for mycell in bcelllst:
+                    for bcell in acelllst:
+                        if math.hypot(mycell.pos[0]-bcell.pos[0], mycell.pos[1]-bcell.pos[1]) - mycell.radius - acell.radius < n*Consts["FRAME_DELTA"]*math.hypot(allcells[self.id].veloc[0]-acell.veloc[0],allcells[self.id].veloc[1]-acell.veloc[1]) and self.testisdangerous(mycell, bcell):
+                            dangerouscells[acell] = [mycell, bcell]
+                            find = True
+                            break
+                    if find:
                         break
         return dangerouscells
 
@@ -492,7 +506,7 @@ class Player():
         for cell in allcells:
             if cell in self.dangerouscelllst(allcells):
                 self.reset()
-                return self.avoid(allcells[self.id], self.dangerouscelllst(allcells)[cell])
+                return self.avoid(self.dangerouscelllst(allcells)[cell][0], self.dangerouscelllst(allcells)[cell][1])
         if len(allcells) > 75:
             r = 100
         elif 50 < len(allcells) < 75:
@@ -504,7 +518,7 @@ class Player():
         if self.finish:
             strategylst = []
             for cell in allcells:
-                if cell.distance_from(allcells[self.id]) - allcells[self.id].radius - cell.radius and cell != allcells[self.id] and cell.radius < allcells[self.id].radius and cell.radius > 5*allcells[self.id].radius*Consts["EJECT_MASS_RATIO"]**0.5:
+                if cell.distance_from(allcells[self.id]) - allcells[self.id].radius - cell.radius < r and cell != allcells[self.id] and cell.radius < allcells[self.id].radius and cell.radius > 5*allcells[self.id].radius*Consts["EJECT_MASS_RATIO"]**0.5:
                     #cellnode = self.getTheBestNode(allcells[self.id], self.trans(cell))
                     cellnode = self.relative_exchange(allcells[self.id], cell)
                     if cellnode.getcost() > 0:
