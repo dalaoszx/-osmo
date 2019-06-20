@@ -110,9 +110,10 @@ class Player():
         b.veloc = cell.veloc
         b.radius = cell.radius
         return b
-        # 将cell类的基本元素转换到cell_node类
+        # 将cell类的基本元素转换到cell_node类，cell_node类代码允许cell的位置处在更广的范围，便于从中筛选最合理的节点
 
     def getTheBestNode(self, sel, oth):
+        #传入cell节点，返回效益最高的节点
         id = oth.id
         pos = oth.pos
         veloc = oth.veloc
@@ -153,12 +154,13 @@ class Player():
                 adict[3] = self.relative_exchange(sel, self.cell_node(id, [pos_1_2, pos_2_3], veloc, radius))
                 adict[4] = self.relative_exchange(sel, self.cell_node(id, [pos_1_3, pos_2_3], veloc, radius))
         cost = adict[1].cost
+        #只考虑和操作节点距离最近的四个节点，然后反复调用函数来确立单位时间收益最高的函数。
         l = 1
         for i in range(1, 5):
             if adict[i].cost > cost:
                 cost = adict[i].cost
                 l = i
-        return adict[l]
+        return adict[l]#从中筛取效益最高的cell_node并返回
 
     def relative_exchange(self, sel, oth):  # 输入：自己的坐标，需要追的球坐标，输入类型为cellNode
         relative_pos = [oth.pos[0] - sel.pos[0], oth.pos[1] - sel.pos[1]]  # 计算相对位置
